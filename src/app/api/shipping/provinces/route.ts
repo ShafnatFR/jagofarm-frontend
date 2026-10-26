@@ -1,42 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getProvinces, isUsingMockShipping } from "@/lib/shipping";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-/**
- * GET /api/shipping/provinces
- *
- * Query (opsional):
- *  - q / search : filter nama provinsi
- *
- * Bentuk respons: { provinces: [{ id, name }], source }
- * Daftar ini dipakai form alamat (field provinsi) dan sebagai acuan filter kota.
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const searchQuery = (searchParams.get("q") ?? searchParams.get("search") ?? "")
-      .trim()
-      .toLowerCase();
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    let provinces = await getProvinces();
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    if (searchQuery) {
-      provinces = provinces.filter((province) =>
-        province.province.toLowerCase().includes(searchQuery)
-      );
-    }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    return NextResponse.json({
-      provinces: provinces.map((province) => ({
-        id: province.province_id,
-        name: province.province,
-      })),
-      source: isUsingMockShipping() ? "mock" : "rajaongkir",
-    });
-  } catch (error) {
-    console.error("Provinces error:", error);
-    return NextResponse.json(
-      { error: "Gagal memuat daftar provinsi", provinces: [] },
-      { status: 500 }
-    );
-  }
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

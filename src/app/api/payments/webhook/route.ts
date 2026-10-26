@@ -1,13 +1,22 @@
 import { NextRequest } from "next/server";
-import { handleWebhookFor } from "@/lib/payments";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-/**
- * POST /api/payments/webhook (URL lama — tetap kompatibel)
- *
- * Diteruskan ke handler generik untuk provider `midtrans`, sehingga perilakunya
- * identik dengan sebelumnya: verifikasi signature SHA512, idempoten, dan mesin
- * status yang sama dengan GET /api/payments/status/[orderId].
- */
-export async function POST(request: NextRequest) {
-  return handleWebhookFor("midtrans", request);
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

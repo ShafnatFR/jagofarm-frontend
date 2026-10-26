@@ -1,23 +1,22 @@
-import { NextResponse } from "next/server";
-import { getStoreProfile } from "@/lib/site-settings";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-/**
- * Profil toko publik (nama, tagline, kontak, alamat, jam layanan, tautan
- * sosial) untuk komponen klien - mis. badge jam layanan di halaman masuk.
- * Semua field bersifat publik; tidak ada data sensitif di sini.
- * Di-cache 60 detik (ISR) dan di-purge oleh aksi admin lewat revalidatePath.
- */
-export const revalidate = 60;
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-export async function GET() {
-  try {
-    const profile = await getStoreProfile();
-    return NextResponse.json({ profile });
-  } catch (error) {
-    console.error("[Site Profile] Error:", error);
-    return NextResponse.json(
-      { error: "Gagal memuat profil toko" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

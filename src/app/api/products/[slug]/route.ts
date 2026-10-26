@@ -1,89 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  try {
-    const { slug } = await params;
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const product = await prisma.product.findFirst({
-      where: { slug, isActive: true, basePrice: { gt: 0 }, weightGram: { gt: 0 } },
-      include: {
-        images: { orderBy: { sortOrder: "asc" } },
-        variants: { 
-          include: { 
-            images: { orderBy: { sortOrder: "asc" } },
-          },
-          orderBy: { sortOrder: "asc" } 
-        },
-        optionGroups: {
-          include: { options: { orderBy: { sortOrder: "asc" } } },
-          orderBy: { sortOrder: "asc" },
-        },
-        category: {
-          select: { id: true, name: true, slug: true, parentId: true },
-        },
-        reviews: {
-          where: { isApproved: true },
-          include: { user: { select: { id: true, name: true, image: true } } },
-          orderBy: { createdAt: "desc" },
-          take: 10,
-        },
-        _count: { select: { reviews: { where: { isApproved: true } } } },
-      },
-    });
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const reviewStats = await prisma.review.aggregate({
-      where: { productId: product.id, isApproved: true },
-      _avg: { rating: true },
-      _count: true,
-    });
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const ratingDistribution = await prisma.review.groupBy({
-      by: ["rating"],
-      where: { productId: product.id, isApproved: true },
-      _count: true,
-    });
-
-    const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    ratingDistribution.forEach((r) => {
-      distribution[r.rating] = r._count;
-    });
-
-    return NextResponse.json({
-      ...product,
-      basePrice: Number(product.basePrice),
-      discountPrice: product.discountPrice ? Number(product.discountPrice) : null,
-      variants: product.variants.map((v) => ({
-        ...v,
-        price: Number(v.price),
-        discountPrice: v.discountPrice ? Number(v.discountPrice) : null,
-        images: v.images ?? [],
-      })),
-      optionGroups: product.optionGroups?.map(og => ({
-        ...og,
-        options: og.options ?? [],
-      })) ?? [],
-      reviews: {
-        items: product.reviews,
-        stats: {
-          total: reviewStats._count,
-          average: reviewStats._avg.rating || 0,
-          distribution,
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Product detail error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

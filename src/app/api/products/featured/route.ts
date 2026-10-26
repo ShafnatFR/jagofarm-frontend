@@ -1,31 +1,22 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-export async function GET() {
-  try {
-    const products = await prisma.product.findMany({
-      where: { isActive: true, isFeatured: true, basePrice: { gt: 0 }, weightGram: { gt: 0 } },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      include: {
-        images: { where: { isPrimary: true }, take: 1 },
-        category: { select: { id: true, name: true, slug: true } },
-        _count: { select: { reviews: { where: { isApproved: true } } } },
-      },
-    });
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const serialized = products.map((p) => ({
-      ...p,
-      basePrice: Number(p.basePrice),
-      discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
-    }));
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    return NextResponse.json({ products: serialized });
-  } catch (error) {
-    console.error("Featured products error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

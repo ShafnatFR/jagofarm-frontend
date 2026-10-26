@@ -1,36 +1,22 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { listPointHistory, earnPerAmount } from "@/lib/loyalty";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-/**
- * GET /api/user/points
- * Saldo poin + riwayat mutasi milik user yang sedang login.
- */
-export async function GET() {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const [user, history] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { points: true, referralCode: true },
-      }),
-      listPointHistory(session.user.id, 30),
-    ]);
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    return NextResponse.json({
-      points: user?.points ?? 0,
-      referralCode: user?.referralCode ?? null,
-      /** Rupiah per 1 poin — sumber tunggal (env LOYALTY_EARN_PER_AMOUNT). */
-      earnPerAmount: earnPerAmount(),
-      history,
-    });
-  } catch (error) {
-    console.error("[points] GET error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

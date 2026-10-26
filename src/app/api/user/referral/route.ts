@@ -1,24 +1,22 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { ensureReferralCode, referralStats } from "@/lib/referral";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-/**
- * GET /api/user/referral
- * Kode referral milik user + statistik (total/berhasil/pending).
- */
-export async function GET() {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const code = await ensureReferralCode(session.user.id);
-    const stats = await referralStats(session.user.id);
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    return NextResponse.json({ code, stats });
-  } catch (error) {
-    console.error("[referral] GET error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

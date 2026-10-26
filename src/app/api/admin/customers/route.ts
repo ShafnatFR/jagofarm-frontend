@@ -1,71 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { parseIntSafe } from "@/lib/utils";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id || session.user.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const { searchParams } = new URL(request.url);
-    const page = parseIntSafe(searchParams.get("page"), 1, 1, 10_000);
-    const limit = parseIntSafe(searchParams.get("limit"), 20, 1, 50);
-    const search = searchParams.get("search");
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const where: Prisma.UserWhereInput = { role: "customer" };
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { phone: { contains: search, mode: "insensitive" } },
-      ];
-    }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const skip = (page - 1) * limit;
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const [customers, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          image: true,
-          createdAt: true,
-          _count: { select: { orders: true } },
-        },
-      }),
-      prisma.user.count({ where }),
-    ]);
-
-    // Get order totals per customer
-    const customerIds = customers.map((c) => c.id);
-    const orderTotals = await prisma.order.groupBy({
-      by: ["userId"],
-      where: { userId: { in: customerIds }, status: { notIn: ["cancelled", "expired"] } },
-      _sum: { total: true },
-      _count: true,
-    });
-    const totalMap = new Map(orderTotals.map((o) => [o.userId, { totalSpent: Number(o._sum.total || 0), orderCount: o._count }]));
-
-    return NextResponse.json({
-      customers: customers.map((c) => ({
-        ...c,
-        totalSpent: totalMap.get(c.id)?.totalSpent || 0,
-        orderCount: totalMap.get(c.id)?.orderCount || 0,
-      })),
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    });
-  } catch (error) {
-    console.error("Admin customers GET error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

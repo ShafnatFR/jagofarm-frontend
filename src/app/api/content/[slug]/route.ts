@@ -1,34 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  try {
-    const { slug } = await params;
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const page = await prisma.contentPage.findUnique({
-      where: { slug, isActive: true },
-    });
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    if (!page) {
-      return NextResponse.json({ error: "Halaman tidak ditemukan" }, { status: 404 });
-    }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    return NextResponse.json({
-      slug: page.slug,
-      title: page.title,
-      seoTitle: page.seoTitle,
-      seoDesc: page.seoDesc,
-      contentHtml: sanitizeHtml(page.contentHtml),
-    });
-  } catch (error) {
-    console.error("[Content Page] Error:", error);
-    return NextResponse.json(
-      { error: "Gagal memuat halaman" },
-      { status: 500 }
-    );
-  }
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

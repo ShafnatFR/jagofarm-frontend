@@ -1,78 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCities, isUsingMockShipping, resolveProvince } from "@/lib/shipping";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-/**
- * GET /api/shipping/cities
- *
- * Query (opsional, semua boleh kosong):
- *  - province_id / province : id numerik ATAU nama provinsi (mis. "Jawa Barat")
- *  - q / search             : filter nama kota (mis. "band")
- *
- * Bentuk respons: { cities: [{ id, name, type, postalCode, provinceId, province }], source }
- * `id` = city_id RajaOngkir yang siap dipakai endpoint shipping/cost.
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const provinceParam = (
-      searchParams.get("province_id") ??
-      searchParams.get("province") ??
-      ""
-    ).trim();
-    const searchQuery = (
-      searchParams.get("q") ??
-      searchParams.get("search") ??
-      ""
-    )
-      .trim()
-      .toLowerCase();
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    let provinceId: string | undefined;
-    let provinceName: string | null = null;
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    if (provinceParam) {
-      const province = await resolveProvince(provinceParam);
-      if (province) {
-        provinceId = province.province_id;
-        provinceName = province.province;
-      }
-      // Provinsi tidak dikenal: kembalikan daftar kosong (tidak bikin form error)
-    }
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    let cities = await getCities(provinceId, searchQuery);
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    if (searchQuery) {
-      cities = cities.filter((city) =>
-        city.city_name.toLowerCase().includes(searchQuery)
-      );
-    }
-
-    return NextResponse.json({
-      cities: cities.map((city) => ({
-        id: city.city_id,
-        name: city.city_name,
-        type: city.type,
-        postalCode: city.postal_code,
-        provinceId: city.province_id,
-        province: city.province,
-      })),
-      provinceId: provinceId ?? null,
-      province: provinceName,
-      source: isUsingMockShipping() ? "mock" : "rajaongkir",
-      message:
-        provinceParam && !provinceId
-          ? `Provinsi "${provinceParam}" tidak ditemukan`
-          : !provinceParam && !searchQuery
-            ? "Sertakan province (id atau nama) atau q untuk mencari kota"
-            : cities.length === 0
-              ? "Kota tidak ditemukan"
-              : undefined,
-    });
-  } catch (error) {
-    console.error("Cities error:", error);
-    return NextResponse.json(
-      { error: "Gagal memuat daftar kota", cities: [] },
-      { status: 500 }
-    );
-  }
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

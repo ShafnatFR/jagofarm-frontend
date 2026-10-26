@@ -1,101 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
-import { z } from "zod";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-export async function GET() {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        image: true,
-        role: true,
-        createdAt: true,
-        _count: { select: { orders: true, reviews: true } },
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ user });
-  } catch (error) {
-    console.error("Profile GET error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
 }
 
-export async function PATCH(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const body = await request.json();
-    const { name, phone, image } = body;
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    // Validasi input (cegah data sampah / tipe salah).
-    const patchProfileSchema = z.object({
-      name: z.string().min(2, "Nama minimal 2 karakter").max(100).optional(),
-      phone: z
-        .string()
-        .min(8, "Nomor telepon minimal 8 digit")
-        .max(20)
-        .regex(/^[0-9+\-\s()]*$/, "Format nomor telepon tidak valid")
-        .optional()
-        .or(z.literal("")),
-      image: z.string().url("URL gambar tidak valid").optional().or(z.literal("")),
-    });
-    const parsed = patchProfileSchema.safeParse({ name, phone, image });
-    if (!parsed.success) {
-      const first = Object.values(parsed.error.flatten().fieldErrors).flat()[0];
-      return NextResponse.json(
-        { error: first ?? "Data tidak valid." },
-        { status: 400 }
-      );
-    }
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const updateData: Prisma.UserUpdateInput = {};
-    if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-    if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
-    if (parsed.data.image !== undefined) updateData.image = parsed.data.image;
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: "No fields to update" },
-        { status: 400 }
-      );
-    }
-
-    const user = await prisma.user.update({
-      where: { id: session.user.id },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        image: true,
-        role: true,
-        createdAt: true,
-      },
-    });
-
-    return NextResponse.json({ message: "Profile updated", user });
-  } catch (error) {
-    console.error("Profile PATCH error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

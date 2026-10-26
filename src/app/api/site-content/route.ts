@@ -1,23 +1,22 @@
-import { NextResponse } from "next/server";
-import { getSiteContent } from "@/lib/site-settings";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-/**
- * Teks konten situs publik (marketing copy: navbar, strip keunggulan, banner
- * CTA, kartu FAQ kontak, panel halaman masuk/daftar) untuk komponen klien.
- * Semua field bersifat publik; tidak ada data sensitif.
- * Di-cache 60 detik (ISR) dan di-purge oleh aksi admin lewat revalidatePath.
- */
-export const revalidate = 60;
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-export async function GET() {
-  try {
-    const content = await getSiteContent();
-    return NextResponse.json({ content });
-  } catch (error) {
-    console.error("[Site Content] Error:", error);
-    return NextResponse.json(
-      { error: "Gagal memuat konten situs" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
+
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }

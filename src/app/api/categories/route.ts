@@ -1,55 +1,22 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/backend-proxy";
 
-interface CategoryNode {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  imageUrl: string | null;
-  sortOrder: number;
-  children: CategoryNode[];
+export function GET(request: NextRequest) {
+  return proxyToBackend(request);
 }
 
-export async function GET() {
-  try {
-    const categories = await prisma.category.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-      include: {
-        _count: { select: { products: { where: { isActive: true } } } },
-      },
-    });
+export function POST(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    const rootCategories = categories.filter((c) => !c.parentId);
-    const childMap = new Map<string, typeof categories>();
+export function PUT(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    categories.forEach((cat) => {
-      if (cat.parentId) {
-        const children = childMap.get(cat.parentId) || [];
-        children.push(cat);
-        childMap.set(cat.parentId, children);
-      }
-    });
+export function PATCH(request: NextRequest) {
+  return proxyToBackend(request);
+}
 
-    function buildTree(parents: typeof categories): CategoryNode[] {
-      return parents.map((cat) => ({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug,
-        description: cat.description,
-        imageUrl: cat.imageUrl,
-        sortOrder: cat.sortOrder,
-        children: buildTree(childMap.get(cat.id) || []),
-      }));
-    }
-
-    return NextResponse.json({ categories: buildTree(rootCategories) });
-  } catch (error) {
-    console.error("Categories error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function DELETE(request: NextRequest) {
+  return proxyToBackend(request);
 }
